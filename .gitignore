@@ -1,0 +1,4 @@
+.vscode/
+*.pdf
+*.out
+__pycache__/
