@@ -13,7 +13,16 @@ end
 
 # ╔═╡ 1c1df1c2-e1e3-11eb-076c-97e92b80099d
 md"""
-# Métodos numéricos en Julia!!
+# Métodos numéricos en Julia
+"""
+
+# ╔═╡ 916dd218-e17f-4fe5-b7ee-7a741c4792bc
+md"""
+1. [Método de Euler](#Método de Euler)
+2. [Método de Euler Mejorado](#Método de Euler Mejorado)
+3. [Método de Ransoque](#Método de Euler)
+4. [Método de Newton](#Método de Newton)
+5. [Fuentes](#Fuentes)
 """
 
 # ╔═╡ 0301f250-349c-4f10-aec6-069f83624412
@@ -48,16 +57,6 @@ Ahora se implementa el método de Euler en una función
 
 # ╔═╡ 4f0dd3b4-575f-46ec-95ab-6819da8487b1
 function euler_method(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)#Parameters: function, h, x₀, y₀, steps(iterate until this value)
-	# Excel imp.
-	# xₙ = x₀
-	# yₙ = y₀
-	# for i in 1:steps #Number of iterations
-	# 	yₘ = f(xₙ, yₙ)
-	# 	xₙ = xₙ + h
-	# 	yₙ = yₙ + h * yₘ
-	# end
-	# return yₘ
-	
 	# Matlab imp.
 	x = [x for x in x₀:h:steps]
 	y = zeros(size(x))
@@ -111,6 +110,81 @@ begin
 	plot(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
 end
 
+# ╔═╡ 90e9216a-82bb-4766-8a0a-f1b94fa9765c
+md"""
+## Método de Euler Mejorado
+"""
+
+# ╔═╡ 6a0470fc-ec7a-42a6-9adc-bb829f076771
+md"""
+Este método es una extensión al anterior y se diferencia en que toma la ecuación de Euler como predictoria y usa este resultado en la ecuación correcta de Euler de la siguiente forma:
+
+$y_{n+1_p} = y_n+h f(t_n,y_n)$
+
+$y_{n+1_c} = y_n+\frac{h}{2}(f(t_n,y_n) + f(t_{n+1},y_{n+1_p}))$
+
+Como se observa la primer ecuación es el método de Euler normal, mientras que la segunda expresión toma como parametro el resultado de la primer ecuación con lo que obitene un promedio entre $f(t_n,y_n)$ y $f(t_{n+1},y_{n+1_p})$.
+"""
+
+# ╔═╡ 1b55d053-cf07-47d6-b023-096b5e43326a
+function euler_improved(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)#Parameters: function, h, x₀, y₀, steps(iterate until this value)
+	# Matlab imp.
+	x = [x for x in x₀:h:steps]
+	y = zeros(size(x))
+	y[1] = y₀
+	for i in 1:(length(x)-1)
+		f₀ = f(x[i], y[i])
+		Δy = y[i] + (f₀ * h)
+		Δx = x[i] + h
+		f₁ = f(Δx, Δy)
+		fₐ = (f₀ + f₁)/2 #fₐ = average of functions
+		Δyₑ = fₐ * h 
+		y[i+1] = y[i] + Δyₑ
+	end
+	return [x y]#Matrix[x y]
+end
+
+# ╔═╡ bf5055e3-8eff-4e5a-90ef-f7b4a0d90343
+md"""
+Usando las definiciones del problema anterior se tiene: 
+"""
+
+# ╔═╡ c703a0f9-f01a-4454-8a35-0c6969b99956
+improved_solution = euler_improved(f, h, x₀, y₀, steps)
+
+# ╔═╡ ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
+md"""
+Graficando las iteraciones anteriores se tiene:
+"""
+
+# ╔═╡ e125c55e-411c-43e9-9fcd-66903af28b11
+begin
+	# plotlyjs()
+	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+end
+
+# ╔═╡ 08d193aa-28d1-40de-85e2-fc2f75179d80
+md"""
+Comparando con el método anterior se observa que el método mejorado de Euler se acerca a la solución real más rapido (Ojo: esto hay que editarlo)
+"""
+
+# ╔═╡ 12b8ac5b-642e-475e-8fd9-45a8c66c23db
+begin
+	# plotlyjs()
+	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+end
+
+# ╔═╡ b1f3139a-c699-4b48-a741-f0a1ebc993a8
+md"""
+## Método de Ranoque
+"""
+
+# ╔═╡ 0f341f12-9bf8-4b30-9b3a-80b729ce365e
+md"""
+## Método de Newton
+"""
+
 # ╔═╡ c099b041-0fbc-4975-8e7d-f522ce54f059
 md"""
 ## Fuentes:
@@ -118,7 +192,12 @@ md"""
 1. https://youtu.be/oxvdl-ztxPA
 2. https://applied-math-coding.medium.com/basic-numerical-methods-for-ordinary-differential-equations-89f8bc367cf9
 3. https://en.wikipedia.org/wiki/Euler_method#MATLAB_code_example
+4. http://test.cua.uam.mx/MN/Methods/EcDiferenciales/EulerM/EulerM.php
+5. http://www.math.utah.edu/~korevaar/2250spring14/improvedeuler_2250.pdf
 """
+
+# ╔═╡ c15d3e2e-47a2-4a9e-a8b9-cf3b7b0ce7c6
+
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1572,6 +1651,7 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╟─1c1df1c2-e1e3-11eb-076c-97e92b80099d
+# ╠═916dd218-e17f-4fe5-b7ee-7a741c4792bc
 # ╟─0301f250-349c-4f10-aec6-069f83624412
 # ╟─78001eb6-2cda-46b1-877d-a51f4ccf620c
 # ╠═74b5ad2d-566b-4d50-9016-431cc26d3bdf
@@ -1584,10 +1664,22 @@ version = "0.9.1+5"
 # ╠═1cefe422-8ddf-4540-a149-233d78a1e25b
 # ╟─ffa2b543-ff01-42d2-9b80-3b68c2c9f776
 # ╠═0475546b-21fc-491c-90c5-89d70172406a
-# ╠═3fb1e43d-5a38-4f53-a7a9-6ce0ee3036cd
+# ╟─3fb1e43d-5a38-4f53-a7a9-6ce0ee3036cd
 # ╠═3efc5098-e469-4895-a7af-4ebb52e882a4
 # ╟─937b904f-78d5-466c-ae6d-66c97fc034e1
-# ╠═da112f96-997e-44db-949a-005915253ce2
+# ╟─da112f96-997e-44db-949a-005915253ce2
+# ╠═90e9216a-82bb-4766-8a0a-f1b94fa9765c
+# ╟─6a0470fc-ec7a-42a6-9adc-bb829f076771
+# ╠═1b55d053-cf07-47d6-b023-096b5e43326a
+# ╟─bf5055e3-8eff-4e5a-90ef-f7b4a0d90343
+# ╠═c703a0f9-f01a-4454-8a35-0c6969b99956
+# ╟─ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
+# ╟─e125c55e-411c-43e9-9fcd-66903af28b11
+# ╟─08d193aa-28d1-40de-85e2-fc2f75179d80
+# ╟─12b8ac5b-642e-475e-8fd9-45a8c66c23db
+# ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
+# ╟─0f341f12-9bf8-4b30-9b3a-80b729ce365e
 # ╟─c099b041-0fbc-4975-8e7d-f522ce54f059
+# ╠═c15d3e2e-47a2-4a9e-a8b9-cf3b7b0ce7c6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
