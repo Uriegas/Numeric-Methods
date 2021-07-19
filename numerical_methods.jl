@@ -123,6 +123,10 @@ $y_{n+1_p} = y_n+h f(t_n,y_n)$
 
 $y_{n+1_c} = y_n+\frac{h}{2}(f(t_n,y_n) + f(t_{n+1},y_{n+1_p}))$
 
+"""
+
+# ╔═╡ 0bfa9c2c-24fb-49ee-9a71-e3d024e38b5c
+md"""
 Como se observa la primer ecuación es el método de Euler normal, mientras que la segunda expresión toma como parametro el resultado de la primer ecuación con lo que obitene un promedio entre $f(t_n,y_n)$ y $f(t_{n+1},y_{n+1_p})$.
 """
 
@@ -175,14 +179,58 @@ begin
 	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
 end
 
-# ╔═╡ b1f3139a-c699-4b48-a741-f0a1ebc993a8
-md"""
-## Método de Ranoque
-"""
-
 # ╔═╡ 0f341f12-9bf8-4b30-9b3a-80b729ce365e
 md"""
 ## Método de Newton
+"""
+
+# ╔═╡ eeb4defb-7baa-4d39-ada1-e233fb2264b3
+md"""
+El método de newton consiste en acercarse iterativamente a la derivada de una función de la siguiente forma:
+
+$x_1 = x_0 + \frac{f(x_0)}{f'(x_0)}$
+
+Donde $x_0$ es una aproximación a la derivada de una función; y $x_1$ es una mejor aproximación a dicha derivada.
+
+O de manera general el algoritmo puede ser expresado como:
+
+$x_{n+1} = x_n + \frac{f(x_n)}{f'(x_n)}$
+
+"""
+
+# ╔═╡ d785f9dd-c5a9-4693-a195-7fa5dcda4080
+md"""
+El siguiente algoritmo define la anterior ecuación de manera iterativa, notese que en este caso añadimos un parámetro más a la función ya que este es el único método de aproximación a una derivada que requiere concer ya la derivada:
+"""
+
+# ╔═╡ 472b2fa9-a97a-4f34-b9f7-470495293a31
+function newton(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)#Parameters: function, h, x₀, y₀, steps(iterate until this value)
+	x = [x for x in x₀:h:steps]
+	y = zeros(size(x))
+	y[1] = y₀
+	# f' = ODEProblem()
+	for i in 1:(length(x)-1)
+		y[i+1] = y[i] + f(x[i])/f'(x[i])
+	end
+	return [x y]#Matrix[x y]
+end
+
+# ╔═╡ 113f088c-0f42-4d5a-97a7-88328b978f62
+md"""
+Tomando las variables definidas al principio se tiene:
+"""
+
+# ╔═╡ b465bb3b-57a7-405c-b777-2def97c0752c
+# newton_solution = newton(f, h, x₀, y₀, steps)
+
+# ╔═╡ b1f3139a-c699-4b48-a741-f0a1ebc993a8
+md"""
+## Método de Derivación
+"""
+
+# ╔═╡ 6374aa0e-1e51-49cb-97ff-082fc92ac3c6
+md"""
+No sé cómo se hace esto, no viene en internet.
 """
 
 # ╔═╡ c099b041-0fbc-4975-8e7d-f522ce54f059
@@ -195,9 +243,6 @@ md"""
 4. http://test.cua.uam.mx/MN/Methods/EcDiferenciales/EulerM/EulerM.php
 5. http://www.math.utah.edu/~korevaar/2250spring14/improvedeuler_2250.pdf
 """
-
-# ╔═╡ c15d3e2e-47a2-4a9e-a8b9-cf3b7b0ce7c6
-
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1651,7 +1696,7 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╟─1c1df1c2-e1e3-11eb-076c-97e92b80099d
-# ╠═916dd218-e17f-4fe5-b7ee-7a741c4792bc
+# ╟─916dd218-e17f-4fe5-b7ee-7a741c4792bc
 # ╟─0301f250-349c-4f10-aec6-069f83624412
 # ╟─78001eb6-2cda-46b1-877d-a51f4ccf620c
 # ╠═74b5ad2d-566b-4d50-9016-431cc26d3bdf
@@ -1668,8 +1713,9 @@ version = "0.9.1+5"
 # ╠═3efc5098-e469-4895-a7af-4ebb52e882a4
 # ╟─937b904f-78d5-466c-ae6d-66c97fc034e1
 # ╟─da112f96-997e-44db-949a-005915253ce2
-# ╠═90e9216a-82bb-4766-8a0a-f1b94fa9765c
+# ╟─90e9216a-82bb-4766-8a0a-f1b94fa9765c
 # ╟─6a0470fc-ec7a-42a6-9adc-bb829f076771
+# ╟─0bfa9c2c-24fb-49ee-9a71-e3d024e38b5c
 # ╠═1b55d053-cf07-47d6-b023-096b5e43326a
 # ╟─bf5055e3-8eff-4e5a-90ef-f7b4a0d90343
 # ╠═c703a0f9-f01a-4454-8a35-0c6969b99956
@@ -1677,9 +1723,14 @@ version = "0.9.1+5"
 # ╟─e125c55e-411c-43e9-9fcd-66903af28b11
 # ╟─08d193aa-28d1-40de-85e2-fc2f75179d80
 # ╟─12b8ac5b-642e-475e-8fd9-45a8c66c23db
-# ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
 # ╟─0f341f12-9bf8-4b30-9b3a-80b729ce365e
+# ╟─eeb4defb-7baa-4d39-ada1-e233fb2264b3
+# ╟─d785f9dd-c5a9-4693-a195-7fa5dcda4080
+# ╠═472b2fa9-a97a-4f34-b9f7-470495293a31
+# ╟─113f088c-0f42-4d5a-97a7-88328b978f62
+# ╠═b465bb3b-57a7-405c-b777-2def97c0752c
+# ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
+# ╟─6374aa0e-1e51-49cb-97ff-082fc92ac3c6
 # ╟─c099b041-0fbc-4975-8e7d-f522ce54f059
-# ╠═c15d3e2e-47a2-4a9e-a8b9-cf3b7b0ce7c6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
