@@ -74,7 +74,7 @@ A continuación definimos los parámetros junto con la función a evaluar
 
 # ╔═╡ 1cefe422-8ddf-4540-a149-233d78a1e25b
 begin
-	f(x, y) = 1 - x + (4 * y)
+	f(x, y) = y - x^2 + 1
 	h = 0.1
 	x₀ = 0
 	y₀ = 1
@@ -91,12 +91,16 @@ solution = euler_method(f, h, x₀, y₀, steps)
 
 # ╔═╡ 3fb1e43d-5a38-4f53-a7a9-6ce0ee3036cd
 md"""
-Para verificar, obtenemos la matriz con lo valores exactos
+Para verificar, obtenemos la solución exacta
 """
 
 # ╔═╡ 3efc5098-e469-4895-a7af-4ebb52e882a4
-begin#TODO
-	prob = ODEProblem()
+begin
+	# f(x, y) = 1 - x + (4 * y)
+	df(u,p,t) = u - t^2 + 1
+	tspan = (0.0, 1.0)
+	probl = ODEProblem(df, 0.5, tspan)
+	sol = solve(probl)
 end
 
 # ╔═╡ 937b904f-78d5-466c-ae6d-66c97fc034e1
@@ -108,6 +112,7 @@ En la gráfica se observa el valor estimado de la ecuación con el método de Eu
 begin
 	# plotlyjs()
 	plot(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
 end
 
 # ╔═╡ 90e9216a-82bb-4766-8a0a-f1b94fa9765c
@@ -165,6 +170,7 @@ Graficando las iteraciones anteriores se tiene:
 begin
 	# plotlyjs()
 	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
 end
 
 # ╔═╡ 08d193aa-28d1-40de-85e2-fc2f75179d80
@@ -177,6 +183,7 @@ begin
 	# plotlyjs()
 	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
 	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
 end
 
 # ╔═╡ 0f341f12-9bf8-4b30-9b3a-80b729ce365e
@@ -228,10 +235,73 @@ md"""
 ## Método de Derivación
 """
 
-# ╔═╡ 6374aa0e-1e51-49cb-97ff-082fc92ac3c6
+# ╔═╡ d6ee8288-e825-4971-9e55-437909bc2f2a
 md"""
-No sé cómo se hace esto, no viene en internet.
+Este método consiste en utilizar la definición de derivada para aproximarse a la misma, es el método más antiguo y existia ya antes de la derivada simbólica desarrollada por Newton.
 """
+
+# ╔═╡ 418f9003-0974-49b1-a977-9993fc399776
+md"""
+La definición de derivada de una función $f(x)$ es la siguiente:
+
+$f'(x) = \lim \limits_{h \to 0} \frac{f(x + h) - f(x)}{h}$
+
+Para realizar una aproximación al valor de $f'(x)$ aplicando la definición para $h>0$:
+
+$f'(x_{0}) \approx \frac{f(x_{0} + h) - f(x_{0})}{h}$
+
+O cuando $h<0$:
+
+$f'(x_{0}) \approx \frac{ f(x_{0}) - f(x_{0} + h)}{h}$
+
+De manera iterativa se puede escrbir:
+
+$f'(x_{n+1}) \approx \frac{f(x_{n} + h) - f(x_{n})}{h}$
+
+"""
+
+# ╔═╡ f8f42214-e6d0-4b73-944f-ff4688a63c4f
+md"""
+La ecuación anterior solo es útil para funciones de una sola variable pero estamos trabajando con ecuaciones diferenciales, por lo que existen 2 posibles soluciones con respecto a x y con respecto a y:
+
+$\frac{\partial f}{\partial x} (x, y)= \lim \limits_{h \to 0} \frac{f(a + h, b) - f(a, b)}{h}$
+
+$\frac{\partial f}{\partial x} (x, y)= \lim \limits_{h \to 0} \frac{f(a, b + h) - f(a, b)}{h}$
+
+"""
+
+# ╔═╡ 2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
+function derivative_approx(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)
+	x = [x for x in x₀:h:steps]
+	y = zeros(size(x))
+	y[1] = y₀
+	for xₙ in x, yₙ in y, i in 1:length(y)-1
+		y[i+1] = (f(xₙ + h, yₙ) - f(xₙ, yₙ)) / h
+	end
+	return [x y]
+end
+
+# ╔═╡ caf22a05-6145-4ab7-b458-05161e6ea645
+md"""
+Aplicando el método anterior a los parámetros definidos se tiene:
+"""
+
+# ╔═╡ b21a8041-a99a-4d38-9ac9-94fa0c5fb291
+diff_solution = derivative_approx(f, h, x₀, y₀, steps)
+
+# ╔═╡ b0e80610-20f5-45e8-9fde-be62e73278e2
+md"""
+En la gráfica se observa la comparación del método de derivación contra el resto de los métodos vistos.
+"""
+
+# ╔═╡ d80f69cc-3e95-46aa-8f1c-51d0ea53def8
+begin
+	# plotlyjs()
+	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+	plot!(diff_solution[:, 1], diff_solution[:,2], markershape=:o, label="Numeric diff metehod")
+	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
+end
 
 # ╔═╡ c099b041-0fbc-4975-8e7d-f522ce54f059
 md"""
@@ -242,6 +312,8 @@ md"""
 3. https://en.wikipedia.org/wiki/Euler_method#MATLAB_code_example
 4. http://test.cua.uam.mx/MN/Methods/EcDiferenciales/EulerM/EulerM.php
 5. http://www.math.utah.edu/~korevaar/2250spring14/improvedeuler_2250.pdf
+6. https://www.uio.no/studier/emner/matnat/math/MAT-INF1100/h08/kompendiet/functions2.pdf
+7. http://www.universityofcalicut.info/SDE/BSc_maths_numerical_methods.pdf
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1722,7 +1794,7 @@ version = "0.9.1+5"
 # ╟─ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
 # ╟─e125c55e-411c-43e9-9fcd-66903af28b11
 # ╟─08d193aa-28d1-40de-85e2-fc2f75179d80
-# ╟─12b8ac5b-642e-475e-8fd9-45a8c66c23db
+# ╠═12b8ac5b-642e-475e-8fd9-45a8c66c23db
 # ╟─0f341f12-9bf8-4b30-9b3a-80b729ce365e
 # ╟─eeb4defb-7baa-4d39-ada1-e233fb2264b3
 # ╟─d785f9dd-c5a9-4693-a195-7fa5dcda4080
@@ -1730,7 +1802,14 @@ version = "0.9.1+5"
 # ╟─113f088c-0f42-4d5a-97a7-88328b978f62
 # ╠═b465bb3b-57a7-405c-b777-2def97c0752c
 # ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
-# ╟─6374aa0e-1e51-49cb-97ff-082fc92ac3c6
+# ╟─d6ee8288-e825-4971-9e55-437909bc2f2a
+# ╟─418f9003-0974-49b1-a977-9993fc399776
+# ╟─f8f42214-e6d0-4b73-944f-ff4688a63c4f
+# ╠═2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
+# ╟─caf22a05-6145-4ab7-b458-05161e6ea645
+# ╠═b21a8041-a99a-4d38-9ac9-94fa0c5fb291
+# ╟─b0e80610-20f5-45e8-9fde-be62e73278e2
+# ╟─d80f69cc-3e95-46aa-8f1c-51d0ea53def8
 # ╟─c099b041-0fbc-4975-8e7d-f522ce54f059
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
