@@ -6,6 +6,7 @@ using InteractiveUtils
 
 # ╔═╡ 74b5ad2d-566b-4d50-9016-431cc26d3bdf
 begin
+	using PlutoUI
 	using Plots
 	using DifferentialEquations
 	# using PlotlyJS
@@ -16,26 +17,60 @@ md"""
 # Métodos numéricos en Julia
 """
 
-# ╔═╡ 916dd218-e17f-4fe5-b7ee-7a741c4792bc
-md"""
-1. [Método de Euler](#Método de Euler)
-2. [Método de Euler Mejorado](#Método de Euler Mejorado)
-3. [Método de Ransoque](#Método de Euler)
-4. [Método de Newton](#Método de Newton)
-5. [Fuentes](#Fuentes)
-"""
-
 # ╔═╡ 0301f250-349c-4f10-aec6-069f83624412
 md"""
 Los métodos numéricos a estudiar permiten hallar la derivida de una función de manera iterativa, es decir, en vez de realizar una operación en base a una serie de reglas de derivación, se aplica una formula de aproximación a la derivada.
 """
 
-# ╔═╡ 78001eb6-2cda-46b1-877d-a51f4ccf620c
+# ╔═╡ 916dd218-e17f-4fe5-b7ee-7a741c4792bc
+TableOfContents()
+
+# ╔═╡ e382d470-ca85-4942-84ae-475b444e4130
 md"""
-Comenzamos por importar las librerias necesarias
+## Parámetros
 """
 
-# ╔═╡ 48454b65-1ead-40d4-8265-016e7d464059
+# ╔═╡ d3cb0831-f431-4377-a7a5-0b89c2b717cd
+md"""
+Los siguientes son los parámetros que usaremos en cada método, cada método se implementa en una función que recibe estos parámetros y genera una matriz con los valores $x$ y $y$.
+"""
+
+# ╔═╡ 1cefe422-8ddf-4540-a149-233d78a1e25b
+begin
+	f(x, y) = y - x^2 + 1
+	h = 0.1
+	x₀ = 0
+	y₀ = 1
+	steps = 1
+end
+
+# ╔═╡ be0c4c2a-e4f8-45fa-9d92-5ea157eb517e
+
+
+# ╔═╡ cab66a45-09fe-4a71-b880-0980a8d8d8f6
+md"""
+## Solución real
+"""
+
+# ╔═╡ 5248ede2-7ed1-4874-888d-6792e0c29e88
+md"""
+La siguiente tabla muestra los valores reales de la derivada de la función definida anteriormente con los parámetros dados:
+"""
+
+# ╔═╡ 3efc5098-e469-4895-a7af-4ebb52e882a4
+begin # f(x, y) = 1 - x + (4 * y)
+	df(u,p,t) = u - t^2 + 1
+	tspan = (0.0, 1.0)
+	probl = ODEProblem(df, 1, tspan) # No se porque 1
+	sol = solve(probl)
+end
+
+# ╔═╡ 923db3c7-a557-45ee-8fbb-4cf352e7f564
+md"""
+En el resto de las secciones se compara gráficamente cada método contra la solución real
+"""
+
+# ╔═╡ 77d46f8f-d9b5-40bd-9645-681da3ca39d1
 
 
 # ╔═╡ 3e3774fb-eb00-4d38-bd52-b6c219ef92de
@@ -45,14 +80,14 @@ md"""
 
 # ╔═╡ 7ea1175e-967f-4250-b908-f9e0ef201dbf
 md"""
-El método consiste en hallar la derivada de una función dada la siguiente función:  
+Este método consiste en hallar la derivada de una función dada la siguiente función:  
 
 $y_{n+1} = y_n+h*f(t_n,y_n)$
 """
 
 # ╔═╡ 696c3a59-3067-489d-86dd-f5f647356cf8
 md"""
-Ahora se implementa el método de Euler en una función
+Ahora se implementa el método de Euler en la siguiente función la cual aplica la función anterior de una manera iterativa.
 """
 
 # ╔═╡ 4f0dd3b4-575f-46ec-95ab-6819da8487b1
@@ -67,45 +102,17 @@ function euler_method(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)
 	return [x y]#Matrix[x y]
 end
 
-# ╔═╡ a249e972-a649-48ca-9a06-b2b7ede5d6b2
-md"""
-A continuación definimos los parámetros junto con la función a evaluar
-"""
-
-# ╔═╡ 1cefe422-8ddf-4540-a149-233d78a1e25b
-begin
-	f(x, y) = y - x^2 + 1
-	h = 0.1
-	x₀ = 0
-	y₀ = 1
-	steps = 1
-end
-
 # ╔═╡ ffa2b543-ff01-42d2-9b80-3b68c2c9f776
 md"""
-Aplicando el método para resolver la anterior función con los parámetros dados se tiene:
+Aplicando el método para resolver la anterior función con los parámetros dados obtiene la siguiente matriz:
 """
 
 # ╔═╡ 0475546b-21fc-491c-90c5-89d70172406a
 solution = euler_method(f, h, x₀, y₀, steps)
 
-# ╔═╡ 3fb1e43d-5a38-4f53-a7a9-6ce0ee3036cd
-md"""
-Para verificar, obtenemos la solución exacta
-"""
-
-# ╔═╡ 3efc5098-e469-4895-a7af-4ebb52e882a4
-begin
-	# f(x, y) = 1 - x + (4 * y)
-	df(u,p,t) = u - t^2 + 1
-	tspan = (0.0, 1.0)
-	probl = ODEProblem(df, 0.5, tspan)
-	sol = solve(probl)
-end
-
 # ╔═╡ 937b904f-78d5-466c-ae6d-66c97fc034e1
 md"""
-En la gráfica se observa el valor estimado de la ecuación con el método de Euler
+En la gráfica se observa el valor estimado de la derivada utilizando el método de Euler, así como su comparación con respecto a la solución real.
 """
 
 # ╔═╡ da112f96-997e-44db-949a-005915253ce2
@@ -114,6 +121,9 @@ begin
 	plot(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
 	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
 end
+
+# ╔═╡ b9afe153-0c0e-4232-9526-ed8f4985a367
+
 
 # ╔═╡ 90e9216a-82bb-4766-8a0a-f1b94fa9765c
 md"""
@@ -163,28 +173,19 @@ improved_solution = euler_improved(f, h, x₀, y₀, steps)
 
 # ╔═╡ ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
 md"""
-Graficando las iteraciones anteriores se tiene:
+Graficando se observa que le método de euler mejorado se acerca más al valor real de la derivada de la función.
 """
 
 # ╔═╡ e125c55e-411c-43e9-9fcd-66903af28b11
 begin
 	# plotlyjs()
-	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+	plot(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
 	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
+	plot!(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
 end
 
-# ╔═╡ 08d193aa-28d1-40de-85e2-fc2f75179d80
-md"""
-Comparando con el método anterior se observa que el método mejorado de Euler se acerca a la solución real más rapido (Ojo: esto hay que editarlo)
-"""
+# ╔═╡ c876a566-4ff0-40f7-a389-d7ade958542a
 
-# ╔═╡ 12b8ac5b-642e-475e-8fd9-45a8c66c23db
-begin
-	# plotlyjs()
-	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
-	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
-	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
-end
 
 # ╔═╡ 0f341f12-9bf8-4b30-9b3a-80b729ce365e
 md"""
@@ -275,11 +276,16 @@ function derivative_approx(f::Function, h::Real, x₀::Real, y₀::Real, steps::
 	x = [x for x in x₀:h:steps]
 	y = zeros(size(x))
 	y[1] = y₀
-	for xₙ in x, yₙ in y, i in 1:length(y)-1
-		y[i+1] = (f(xₙ + h, yₙ) - f(xₙ, yₙ)) / h
+	for i in 1:length(y)-1
+		xₙ = x[i]
+		yₙ = y[i]
+		y[i+1] = (f(xₙ + h, yₙ + h) - f(xₙ, yₙ)) / h
 	end
 	return [x y]
 end
+
+# ╔═╡ dd0f3e3b-d6a6-44f0-99b4-247c7037afaa
+[x for x in x₀:h:steps]
 
 # ╔═╡ caf22a05-6145-4ab7-b458-05161e6ea645
 md"""
@@ -291,7 +297,7 @@ diff_solution = derivative_approx(f, h, x₀, y₀, steps)
 
 # ╔═╡ b0e80610-20f5-45e8-9fde-be62e73278e2
 md"""
-En la gráfica se observa la comparación del método de derivación contra el resto de los métodos vistos.
+En la gráfica se observa la comparación de todos los métodos vistos.
 """
 
 # ╔═╡ d80f69cc-3e95-46aa-8f1c-51d0ea53def8
@@ -303,9 +309,36 @@ begin
 	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
 end
 
+# ╔═╡ 4ed5c81a-26b7-45b8-b200-deb810efd192
+md"""
+La siguiente tabla hace una comparación de los anteriores métodos
+"""
+
+# ╔═╡ c662dc62-7c83-4607-a08a-88318b930968
+md"""
+| xₙ  | f’( xₙ ) | Euler | Euler mejorado | Newton-Raphson | Derivación | Error | % Error |
+| :------------- | :----------: | -----------: | -----------: | -----------: | -----------: | -----------: | -----------: |
+| | | | | | | | | |
+"""
+
+# ╔═╡ d325858b-3dff-446d-a168-1c19257fc6b0
+#Falta f'(xₙ) newton, error, %error
+
+# ╔═╡ defa88c3-e531-493f-89ec-cf71bb9f8ac0
+[ solution[:, 1] solution[:, 2] improved_solution[:, 2] diff_solution[:,2] ]
+
+# ╔═╡ 5d2b8cbc-4caa-4509-b50d-6e40b0db028c
+
+
+# ╔═╡ e6049fd8-79ea-48af-b77b-e741a12d57be
+md"""
+## Conclusión
+Los métodos numéricos son útiles para aproximar el valor de una función de manera computacional, sin ellos no sería posible calcular derivadas por medio de computadoras, estos métodos fueron el parte aguas para el desarrollo de métodos más eficientes y elegantes como la [diferenciación automática](https://es.wikipedia.org/wiki/Diferenciaci%C3%B3n_autom%C3%A1tica).
+"""
+
 # ╔═╡ c099b041-0fbc-4975-8e7d-f522ce54f059
 md"""
-## Fuentes:
+## Bibliografía
 
 1. https://youtu.be/oxvdl-ztxPA
 2. https://applied-math-coding.medium.com/basic-numerical-methods-for-ordinary-differential-equations-89f8bc367cf9
@@ -321,10 +354,12 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
 DifferentialEquations = "~6.17.2"
 Plots = "~1.18.2"
+PlutoUI = "~0.7.9"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -1183,6 +1218,12 @@ git-tree-sha1 = "f32cd6fcd2909c2d1cdd47ce55e1394b04a66fe2"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.18.2"
 
+[[PlutoUI]]
+deps = ["Base64", "Dates", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "Suppressor"]
+git-tree-sha1 = "44e225d5837e2a2345e69a1d1e01ac2443ff9fcb"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.9"
+
 [[PoissonRandom]]
 deps = ["Random", "Statistics", "Test"]
 git-tree-sha1 = "44d018211a56626288b5d3f8c6497d28c26dc850"
@@ -1454,6 +1495,11 @@ deps = ["CompilerSupportLibraries_jll", "Libdl", "OpenBLAS_jll", "Pkg", "SuiteSp
 git-tree-sha1 = "013ff4504fc1d475aa80c63b455b6b3a58767db2"
 uuid = "fb77eaff-e24c-56d4-86b1-d163f2edb164"
 version = "5.2.0+1"
+
+[[Suppressor]]
+git-tree-sha1 = "a819d77f31f83e5792a76081eee1ea6342ab8787"
+uuid = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
+version = "0.2.0"
 
 [[SymbolicUtils]]
 deps = ["AbstractTrees", "ChainRulesCore", "Combinatorics", "ConstructionBase", "DataStructures", "DynamicPolynomials", "IfElse", "LabelledArrays", "LinearAlgebra", "MultivariatePolynomials", "NaNMath", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "TimerOutputs"]
@@ -1768,23 +1814,27 @@ version = "0.9.1+5"
 
 # ╔═╡ Cell order:
 # ╟─1c1df1c2-e1e3-11eb-076c-97e92b80099d
-# ╟─916dd218-e17f-4fe5-b7ee-7a741c4792bc
 # ╟─0301f250-349c-4f10-aec6-069f83624412
-# ╟─78001eb6-2cda-46b1-877d-a51f4ccf620c
-# ╠═74b5ad2d-566b-4d50-9016-431cc26d3bdf
-# ╟─48454b65-1ead-40d4-8265-016e7d464059
+# ╟─916dd218-e17f-4fe5-b7ee-7a741c4792bc
+# ╟─74b5ad2d-566b-4d50-9016-431cc26d3bdf
+# ╟─e382d470-ca85-4942-84ae-475b444e4130
+# ╟─d3cb0831-f431-4377-a7a5-0b89c2b717cd
+# ╠═1cefe422-8ddf-4540-a149-233d78a1e25b
+# ╟─be0c4c2a-e4f8-45fa-9d92-5ea157eb517e
+# ╟─cab66a45-09fe-4a71-b880-0980a8d8d8f6
+# ╟─5248ede2-7ed1-4874-888d-6792e0c29e88
+# ╠═3efc5098-e469-4895-a7af-4ebb52e882a4
+# ╟─923db3c7-a557-45ee-8fbb-4cf352e7f564
+# ╟─77d46f8f-d9b5-40bd-9645-681da3ca39d1
 # ╟─3e3774fb-eb00-4d38-bd52-b6c219ef92de
 # ╟─7ea1175e-967f-4250-b908-f9e0ef201dbf
 # ╟─696c3a59-3067-489d-86dd-f5f647356cf8
 # ╠═4f0dd3b4-575f-46ec-95ab-6819da8487b1
-# ╟─a249e972-a649-48ca-9a06-b2b7ede5d6b2
-# ╠═1cefe422-8ddf-4540-a149-233d78a1e25b
 # ╟─ffa2b543-ff01-42d2-9b80-3b68c2c9f776
 # ╠═0475546b-21fc-491c-90c5-89d70172406a
-# ╟─3fb1e43d-5a38-4f53-a7a9-6ce0ee3036cd
-# ╠═3efc5098-e469-4895-a7af-4ebb52e882a4
 # ╟─937b904f-78d5-466c-ae6d-66c97fc034e1
-# ╟─da112f96-997e-44db-949a-005915253ce2
+# ╠═da112f96-997e-44db-949a-005915253ce2
+# ╟─b9afe153-0c0e-4232-9526-ed8f4985a367
 # ╟─90e9216a-82bb-4766-8a0a-f1b94fa9765c
 # ╟─6a0470fc-ec7a-42a6-9adc-bb829f076771
 # ╟─0bfa9c2c-24fb-49ee-9a71-e3d024e38b5c
@@ -1793,8 +1843,7 @@ version = "0.9.1+5"
 # ╠═c703a0f9-f01a-4454-8a35-0c6969b99956
 # ╟─ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
 # ╟─e125c55e-411c-43e9-9fcd-66903af28b11
-# ╟─08d193aa-28d1-40de-85e2-fc2f75179d80
-# ╠═12b8ac5b-642e-475e-8fd9-45a8c66c23db
+# ╟─c876a566-4ff0-40f7-a389-d7ade958542a
 # ╟─0f341f12-9bf8-4b30-9b3a-80b729ce365e
 # ╟─eeb4defb-7baa-4d39-ada1-e233fb2264b3
 # ╟─d785f9dd-c5a9-4693-a195-7fa5dcda4080
@@ -1806,10 +1855,17 @@ version = "0.9.1+5"
 # ╟─418f9003-0974-49b1-a977-9993fc399776
 # ╟─f8f42214-e6d0-4b73-944f-ff4688a63c4f
 # ╠═2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
+# ╠═dd0f3e3b-d6a6-44f0-99b4-247c7037afaa
 # ╟─caf22a05-6145-4ab7-b458-05161e6ea645
 # ╠═b21a8041-a99a-4d38-9ac9-94fa0c5fb291
 # ╟─b0e80610-20f5-45e8-9fde-be62e73278e2
-# ╟─d80f69cc-3e95-46aa-8f1c-51d0ea53def8
+# ╠═d80f69cc-3e95-46aa-8f1c-51d0ea53def8
+# ╟─4ed5c81a-26b7-45b8-b200-deb810efd192
+# ╟─c662dc62-7c83-4607-a08a-88318b930968
+# ╠═d325858b-3dff-446d-a168-1c19257fc6b0
+# ╠═defa88c3-e531-493f-89ec-cf71bb9f8ac0
+# ╟─5d2b8cbc-4caa-4509-b50d-6e40b0db028c
+# ╟─e6049fd8-79ea-48af-b77b-e741a12d57be
 # ╟─c099b041-0fbc-4975-8e7d-f522ce54f059
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
