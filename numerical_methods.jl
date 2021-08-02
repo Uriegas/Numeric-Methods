@@ -4,26 +4,57 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        el
+    end
+end
+
 # ╔═╡ 74b5ad2d-566b-4d50-9016-431cc26d3bdf
 begin
 	using PlutoUI
 	using Plots
 	using DifferentialEquations
+	using ForwardDiff
+	using Symbolics
+	using LaTeXStrings
 	# using PlotlyJS
 end
+
+# ╔═╡ b6be1aa5-5f49-414f-806c-9de2441644eb
+md"""
+**Agosto 2020**
+"""
 
 # ╔═╡ 1c1df1c2-e1e3-11eb-076c-97e92b80099d
 md"""
 # Métodos numéricos en Julia
 """
 
-# ╔═╡ 0301f250-349c-4f10-aec6-069f83624412
+# ╔═╡ 9f0296f2-c142-48c5-9a54-a2b4f5d44e26
 md"""
-Los métodos numéricos a estudiar permiten hallar la derivida de una función de manera iterativa, es decir, en vez de realizar una operación en base a una serie de reglas de derivación, se aplica una formula de aproximación a la derivada.
+**Alumnos:**
+* Daniela Estefania Huerta Vázquez (1930474)
+* Jesús Eduardo Uriegas Ibarra (1930526)
+
+**Materia:**
+* Matemáticas para Ingenieria II
+
+**Maestro:**
+* Juan Manuel Ornelas Llerena
+
 """
 
 # ╔═╡ 916dd218-e17f-4fe5-b7ee-7a741c4792bc
 TableOfContents()
+
+# ╔═╡ 0301f250-349c-4f10-aec6-069f83624412
+md"""
+Los métodos numéricos a estudiar permiten hallar la derivida de una función de manera iterativa, es decir, en vez de realizar una operación en base a una serie de reglas de derivación, se aplica una formula de aproximación a la derivada.
+"""
 
 # ╔═╡ e382d470-ca85-4942-84ae-475b444e4130
 md"""
@@ -32,12 +63,13 @@ md"""
 
 # ╔═╡ d3cb0831-f431-4377-a7a5-0b89c2b717cd
 md"""
-Los siguientes son los parámetros que usaremos en cada método, cada método se implementa en una función que recibe estos parámetros y genera una matriz con los valores $x$ y $y$.
+Los siguientes son los parámetros que usaremos en cada método, los cuales se implementan en una función cada uno que recibe estos parámetros y genera una matriz con los valores $x$ y $y$.
 """
 
 # ╔═╡ 1cefe422-8ddf-4540-a149-233d78a1e25b
 begin
 	f(x, y) = y - x^2 + 1
+	f₂(x) = x^2 - 2
 	h = 0.1
 	x₀ = 0
 	y₀ = 1
@@ -73,9 +105,14 @@ En el resto de las secciones se compara gráficamente cada método contra la sol
 # ╔═╡ 77d46f8f-d9b5-40bd-9645-681da3ca39d1
 
 
+# ╔═╡ 85d0e6f7-c038-481d-bd9b-938a8bd6f5f0
+md"""
+## Métodos para ecuaciones multivariable
+"""
+
 # ╔═╡ 3e3774fb-eb00-4d38-bd52-b6c219ef92de
 md"""
-## Método de Euler
+### Método de Euler
 """
 
 # ╔═╡ 7ea1175e-967f-4250-b908-f9e0ef201dbf
@@ -127,7 +164,7 @@ end
 
 # ╔═╡ 90e9216a-82bb-4766-8a0a-f1b94fa9765c
 md"""
-## Método de Euler Mejorado
+### Método de Euler Mejorado
 """
 
 # ╔═╡ 6a0470fc-ec7a-42a6-9adc-bb829f076771
@@ -187,53 +224,161 @@ end
 # ╔═╡ c876a566-4ff0-40f7-a389-d7ade958542a
 
 
+# ╔═╡ 0534d10d-5169-4ffe-8aee-78e7ab334162
+md"""
+## Métodos para ecuaciones de una sola variable
+"""
+
+# ╔═╡ 00c3d0d5-764e-461c-bffe-781a746b7d33
+md"""
+Los anteriores métodos suelen utilizarse para resolver ecuaciones diferenciales, en cambio los siguientes métodos suelen utilizarse para ecuaciones de una sola variable, aunque estos pueden generalizarse para aplicarse en ecuaciones de $n$-variables pero funcionan mejor para ecuaciones de una sola variable debido a su simplicidad.
+"""
+
 # ╔═╡ 0f341f12-9bf8-4b30-9b3a-80b729ce365e
 md"""
-## Método de Newton
+### Método de Newton
 """
 
 # ╔═╡ eeb4defb-7baa-4d39-ada1-e233fb2264b3
 md"""
-El método de newton consiste en acercarse iterativamente a la derivada de una función de la siguiente forma:
+El método de newton consiste en acercarse iterativamente a la solución de un sistema de ecuaciones a través de la siguiente forma:
 
-$x_1 = x_0 + \frac{f(x_0)}{f'(x_0)}$
+$x_1 = x_0 - \frac{f(x_0)}{f'(x_0)}$
 
-Donde $x_0$ es una aproximación a la derivada de una función; y $x_1$ es una mejor aproximación a dicha derivada.
+Donde $x_0$ es una aproximación a la solución de la función cuando $f(x) = 0$; y $x_1$ es una mejor aproximación a dicha solución.
 
-O de manera general el algoritmo puede ser expresado como:
+De manera general el algoritmo puede ser expresado como:
 
-$x_{n+1} = x_n + \frac{f(x_n)}{f'(x_n)}$
+$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$
 
+"""
+
+# ╔═╡ 1cdae926-34e8-46a2-9721-8e9dee9feb4d
+md"""
+En la siguiente gráfica se observa la aproximación a la ecuación $f(x) = x^2$ cuando $x^2 = 0$, donde $x₀$ es la estimación inicial y $n$ el número de iteraciones para aproximar la solución.
+"""
+
+# ╔═╡ d13f17cb-35eb-4fe2-8666-b18eeebac70e
+md"""
+n = $(@bind n2 Slider(0:10, show_value=true, default=0))
+"""
+
+# ╔═╡ 173ab92a-3b2e-425b-bca0-20da0c48055d
+md"""
+x₀ = $(@bind x02 Slider(-10:10, show_value=true, default=6))
+"""
+
+# ╔═╡ 145454b5-948a-4073-a692-e3aab7001e35
+md"""
+Como se observa entre mayor es el número de iteraciones mayor es la aproximación a la solución de la ecuación.
 """
 
 # ╔═╡ d785f9dd-c5a9-4693-a195-7fa5dcda4080
 md"""
-El siguiente algoritmo define la anterior ecuación de manera iterativa, notese que en este caso añadimos un parámetro más a la función ya que este es el único método de aproximación a una derivada que requiere concer ya la derivada:
+El siguiente algoritmo implementa la ecuación anterior:
 """
 
-# ╔═╡ 472b2fa9-a97a-4f34-b9f7-470495293a31
-function newton(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)#Parameters: function, h, x₀, y₀, steps(iterate until this value)
-	x = [x for x in x₀:h:steps]
-	y = zeros(size(x))
-	y[1] = y₀
-	# f' = ODEProblem()
-	for i in 1:(length(x)-1)
-		y[i+1] = y[i] + f(x[i])/f'(x[i])
+# ╔═╡ 7480a151-4156-45cf-ae08-83675f789783
+function newton(f::Function, h::Real, x₀::Real, steps::Real)
+	f′(x) = ForwardDiff.derivative(f, x)
+	x = similar(0:h:steps)
+	x[1] = x₀
+	for i ∈ 1:(length(x)-1)
+		x[i+1] = x[i] - ( f(x[i]) / f′(x[i]))
 	end
-	return [x y]#Matrix[x y]
+	return x
+end
+
+# ╔═╡ 38d93837-322d-47cd-86e5-959b80d0994b
+md"""
+La siguiente función es también una implementación del método de Newton pero de una manera más simple:
+"""
+
+# ╔═╡ ec813e42-baa2-4308-8dd8-9904766ffe26
+function newton1D(f, x0)
+	f′(x) = ForwardDiff.derivative(f, x)
+	x0 = 37.0
+	sequence = [x0]
+	x = x0
+	for i in 1:10
+		x -= f(x) / f′(x)
+	end
+	return x
 end
 
 # ╔═╡ 113f088c-0f42-4d5a-97a7-88328b978f62
 md"""
-Tomando las variables definidas al principio se tiene:
+Tomando como ejemplo la ecuación $x^2 - 2$, cuya solución es $\sqrt{2}$ se tiene:
 """
 
-# ╔═╡ b465bb3b-57a7-405c-b777-2def97c0752c
-# newton_solution = newton(f, h, x₀, y₀, steps)
+# ╔═╡ 88740cbe-6014-41ab-b367-353c9d540056
+newton(f₂, h, 37, steps)
+
+# ╔═╡ 0e1a5906-986b-4560-bce2-40b478707ccb
+newton1D(f₂, 37.0)
+
+# ╔═╡ ae3798ad-54be-4522-9775-cebfe20fa2ec
+sqrt(2)
+
+# ╔═╡ 1374d2b8-8542-4c1f-a284-51fc681e7c42
+straight(x0, y0, x, m) = y0 + m * (x - x0)
+
+# ╔═╡ 83d51a1e-2e65-4934-b209-a19570daf665
+function standard_Newton(f, n, x_range, x0, ymin=-10, ymax=10)
+    
+    f′ = x -> ForwardDiff.derivative(f, x)
+
+
+	p = plot(f, x_range, lw=3, ylim=(ymin, ymax), legend=:false, size=(400, 300))
+
+	hline!([0.0], c="magenta", lw=3, ls=:dash)
+	scatter!([x0], [0], c="green", ann=(x0, -5, L"x_0", 10))
+
+	for i in 1:n
+
+		plot!([x0, x0], [0, f(x0)], c=:gray, alpha=0.5)
+		scatter!([x0], [f(x0)], c=:red)
+		m = f′(x0)
+
+		plot!(x_range, [straight(x0, f(x0), x, m) for x in x_range], 
+			  c=:blue, alpha=0.5, ls=:dash, lw=2)
+
+		x1 = x0 - f(x0) / m
+
+		scatter!([x1], [0], c="green", ann=(x1, -5, L"x_%$i", 10))
+		
+		x0 = x1
+
+	end
+
+	p |> as_svg
+
+
+end
+
+# ╔═╡ 4f359c4d-9c6d-4534-a743-2385be1b6267
+let
+	# f(x) = x^2 - 2
+	standard_Newton(f₂, n2, -1:0.01:10, x02, -10, 70)
+end
+
+# ╔═╡ 9ea67f34-067e-4426-b66d-c75dc4ee87bd
+#= md"""
+La siguiente gráfica muestra los resultados del método de Newton en comparación a los anteriores, como se observa el método de Newton es ...
+""" =#
+
+# ╔═╡ cc2d4832-86fd-4987-9137-c696e2a6d9dc
+# begin
+# 	# plotlyjs()
+# 	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+# 	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+# 	plot!(diff_solution[:, 1], diff_solution[:,2], markershape=:o, label="Numeric diff metehod")
+# 	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
+# end
 
 # ╔═╡ b1f3139a-c699-4b48-a741-f0a1ebc993a8
 md"""
-## Método de Derivación
+### Método de Derivación
 """
 
 # ╔═╡ d6ee8288-e825-4971-9e55-437909bc2f2a
@@ -279,13 +424,10 @@ function derivative_approx(f::Function, h::Real, x₀::Real, y₀::Real, steps::
 	for i in 1:length(y)-1
 		xₙ = x[i]
 		yₙ = y[i]
-		y[i+1] = (f(xₙ + h, yₙ + h) - f(xₙ, yₙ)) / h
+		y[i+1] = (f(xₙ + h, 1) - f(xₙ, 1)) / h
 	end
 	return [x y]
 end
-
-# ╔═╡ dd0f3e3b-d6a6-44f0-99b4-247c7037afaa
-[x for x in x₀:h:steps]
 
 # ╔═╡ caf22a05-6145-4ab7-b458-05161e6ea645
 md"""
@@ -353,13 +495,19 @@ md"""
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 DifferentialEquations = "~6.17.2"
+ForwardDiff = "~0.10.18"
+LaTeXStrings = "~1.2.1"
 Plots = "~1.18.2"
 PlutoUI = "~0.7.9"
+Symbolics = "~1.4.2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -1509,9 +1657,9 @@ version = "0.13.1"
 
 [[Symbolics]]
 deps = ["ConstructionBase", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "IfElse", "Latexify", "Libdl", "LinearAlgebra", "MacroTools", "NaNMath", "RecipesBase", "Reexport", "Requires", "RuntimeGeneratedFunctions", "SciMLBase", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicUtils", "TreeViews"]
-git-tree-sha1 = "a1eb487f1c042bdc1087053f7a7a40fbb2b998a7"
+git-tree-sha1 = "dae26a27018d0cad7efd585a9a0012c6a2752a88"
 uuid = "0c5d862f-8b57-4792-8d23-62f2024744c7"
-version = "1.2.3"
+version = "1.4.2"
 
 [[TOML]]
 deps = ["Dates"]
@@ -1813,9 +1961,11 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
+# ╟─b6be1aa5-5f49-414f-806c-9de2441644eb
 # ╟─1c1df1c2-e1e3-11eb-076c-97e92b80099d
-# ╟─0301f250-349c-4f10-aec6-069f83624412
+# ╟─9f0296f2-c142-48c5-9a54-a2b4f5d44e26
 # ╟─916dd218-e17f-4fe5-b7ee-7a741c4792bc
+# ╟─0301f250-349c-4f10-aec6-069f83624412
 # ╟─74b5ad2d-566b-4d50-9016-431cc26d3bdf
 # ╟─e382d470-ca85-4942-84ae-475b444e4130
 # ╟─d3cb0831-f431-4377-a7a5-0b89c2b717cd
@@ -1826,6 +1976,7 @@ version = "0.9.1+5"
 # ╠═3efc5098-e469-4895-a7af-4ebb52e882a4
 # ╟─923db3c7-a557-45ee-8fbb-4cf352e7f564
 # ╟─77d46f8f-d9b5-40bd-9645-681da3ca39d1
+# ╟─85d0e6f7-c038-481d-bd9b-938a8bd6f5f0
 # ╟─3e3774fb-eb00-4d38-bd52-b6c219ef92de
 # ╟─7ea1175e-967f-4250-b908-f9e0ef201dbf
 # ╟─696c3a59-3067-489d-86dd-f5f647356cf8
@@ -1844,18 +1995,32 @@ version = "0.9.1+5"
 # ╟─ebc047b6-381a-4b6a-9c88-4450f3fcdbc9
 # ╟─e125c55e-411c-43e9-9fcd-66903af28b11
 # ╟─c876a566-4ff0-40f7-a389-d7ade958542a
+# ╟─0534d10d-5169-4ffe-8aee-78e7ab334162
+# ╟─00c3d0d5-764e-461c-bffe-781a746b7d33
 # ╟─0f341f12-9bf8-4b30-9b3a-80b729ce365e
 # ╟─eeb4defb-7baa-4d39-ada1-e233fb2264b3
+# ╟─1cdae926-34e8-46a2-9721-8e9dee9feb4d
+# ╟─d13f17cb-35eb-4fe2-8666-b18eeebac70e
+# ╟─173ab92a-3b2e-425b-bca0-20da0c48055d
+# ╟─4f359c4d-9c6d-4534-a743-2385be1b6267
+# ╟─145454b5-948a-4073-a692-e3aab7001e35
 # ╟─d785f9dd-c5a9-4693-a195-7fa5dcda4080
-# ╠═472b2fa9-a97a-4f34-b9f7-470495293a31
+# ╠═7480a151-4156-45cf-ae08-83675f789783
+# ╟─38d93837-322d-47cd-86e5-959b80d0994b
+# ╠═ec813e42-baa2-4308-8dd8-9904766ffe26
 # ╟─113f088c-0f42-4d5a-97a7-88328b978f62
-# ╠═b465bb3b-57a7-405c-b777-2def97c0752c
+# ╠═88740cbe-6014-41ab-b367-353c9d540056
+# ╠═0e1a5906-986b-4560-bce2-40b478707ccb
+# ╠═ae3798ad-54be-4522-9775-cebfe20fa2ec
+# ╟─83d51a1e-2e65-4934-b209-a19570daf665
+# ╟─1374d2b8-8542-4c1f-a284-51fc681e7c42
+# ╟─9ea67f34-067e-4426-b66d-c75dc4ee87bd
+# ╟─cc2d4832-86fd-4987-9137-c696e2a6d9dc
 # ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
 # ╟─d6ee8288-e825-4971-9e55-437909bc2f2a
 # ╟─418f9003-0974-49b1-a977-9993fc399776
 # ╟─f8f42214-e6d0-4b73-944f-ff4688a63c4f
 # ╠═2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
-# ╠═dd0f3e3b-d6a6-44f0-99b4-247c7037afaa
 # ╟─caf22a05-6145-4ab7-b458-05161e6ea645
 # ╠═b21a8041-a99a-4d38-9ac9-94fa0c5fb291
 # ╟─b0e80610-20f5-45e8-9fde-be62e73278e2
