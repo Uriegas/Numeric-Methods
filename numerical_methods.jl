@@ -279,7 +279,7 @@ El siguiente algoritmo implementa la ecuación anterior:
 """
 
 # ╔═╡ 7480a151-4156-45cf-ae08-83675f789783
-function newton(f::Function, h::Real, x₀::Real, steps::Real)
+function newton(f::Function, h::Float64, x₀::Real, steps::Real)
 	f′(x) = ForwardDiff.derivative(f, x)
 	x = similar(0:h:steps)
 	x[1] = x₀
@@ -295,11 +295,10 @@ La siguiente función es también una implementación del método de Newton pero
 """
 
 # ╔═╡ ec813e42-baa2-4308-8dd8-9904766ffe26
-function newton1D(f, x0)
+function newton1D(f, x₀)
 	f′(x) = ForwardDiff.derivative(f, x)
-	sequence = [x0]
-	x = x0
-	for i in 1:10
+	x = x₀
+	for i ∈ 1:11
 		x -= f(x) / f′(x)
 	end
 	return x
@@ -311,13 +310,28 @@ Tomando como ejemplo la ecuación $x^2 - 2$, cuya solución es $\sqrt{2}$ se tie
 """
 
 # ╔═╡ 88740cbe-6014-41ab-b367-353c9d540056
-newton(f₂, h, 1, steps)
+newton_res = newton(f₂, h, 1, steps)
 
 # ╔═╡ 0e1a5906-986b-4560-bce2-40b478707ccb
 newton1D(f₂, 37.0)
 
 # ╔═╡ ae3798ad-54be-4522-9775-cebfe20fa2ec
-sqrt(2)
+√2
+
+# ╔═╡ ee65148f-d431-4e98-9842-265000497084
+md"""
+Realizando una comparación se tiene:
+"""
+
+# ╔═╡ bf3aa936-b6ac-4ca1-9b26-4698ef44f63f
+md"""
+| xₙ  | Newton | Real | Error Abs. | % Error |
+| :----------: | -----------: | -----------: | -----------: | -----------: |
+| | | | | | |
+"""
+
+# ╔═╡ e344e143-1479-4cdb-98b9-70660e08e890
+[[x for x ∈ 0:h:steps] newton_res [√2 for i ∈ 1:11] [abs(√2 - i) for i ∈ newton_res ] [abs((√2 - i)*100/√2) for i ∈ newton_res ] ]
 
 # ╔═╡ 1374d2b8-8542-4c1f-a284-51fc681e7c42
 straight(x0, y0, x, m) = y0 + m * (x - x0)
@@ -469,21 +483,18 @@ end
 
 # ╔═╡ 4ed5c81a-26b7-45b8-b200-deb810efd192
 md"""
-La siguiente tabla hace una comparación de los anteriores métodos
+La siguiente tabla hace una comparación del método anterior:
 """
 
 # ╔═╡ c662dc62-7c83-4607-a08a-88318b930968
 md"""
-| xₙ  | f’( xₙ ) | Euler | Euler mejorado | Newton-Raphson | Derivación | Error | % Error |
-| :------------- | :----------: | -----------: | -----------: | -----------: | -----------: | -----------: | -----------: |
-| | | | | | | | | |
+| xₙ  | Derivación | Real | Error Abs. | % Error |
+| :----------: | -----------: | -----------: | -----------: | -----------: |
+| | | | | | |
 """
 
-# ╔═╡ d325858b-3dff-446d-a168-1c19257fc6b0
-#Falta f'(xₙ) newton, error, %error
-
 # ╔═╡ defa88c3-e531-493f-89ec-cf71bb9f8ac0
-[ solution[:, 1] solution[:, 2] improved_solution[:, 2] diff_solution[:,2] ]
+[diff_solution[:,1] diff_solution[:,2] [√x for x ∈ 0:0.1:1] [abs(√(x/10) - diff_solution[x,2]) for x ∈ 1:11 ] [abs(√(x/10) - diff_solution[x,2])*100/√(x/10) for x ∈ 1:11 ] ]
 
 # ╔═╡ 5d2b8cbc-4caa-4509-b50d-6e40b0db028c
 
@@ -2029,6 +2040,9 @@ version = "0.9.1+5"
 # ╠═88740cbe-6014-41ab-b367-353c9d540056
 # ╠═0e1a5906-986b-4560-bce2-40b478707ccb
 # ╠═ae3798ad-54be-4522-9775-cebfe20fa2ec
+# ╟─ee65148f-d431-4e98-9842-265000497084
+# ╟─bf3aa936-b6ac-4ca1-9b26-4698ef44f63f
+# ╟─e344e143-1479-4cdb-98b9-70660e08e890
 # ╟─83d51a1e-2e65-4934-b209-a19570daf665
 # ╟─1374d2b8-8542-4c1f-a284-51fc681e7c42
 # ╟─9ea67f34-067e-4426-b66d-c75dc4ee87bd
@@ -2041,14 +2055,13 @@ version = "0.9.1+5"
 # ╟─a11d4b19-d087-490e-a05d-d9431adfec04
 # ╠═2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
 # ╟─caf22a05-6145-4ab7-b458-05161e6ea645
-# ╟─e791f31f-d535-4b75-894b-74e23a654172
 # ╠═b21a8041-a99a-4d38-9ac9-94fa0c5fb291
+# ╟─e791f31f-d535-4b75-894b-74e23a654172
 # ╟─b0e80610-20f5-45e8-9fde-be62e73278e2
-# ╟─d80f69cc-3e95-46aa-8f1c-51d0ea53def8
+# ╠═d80f69cc-3e95-46aa-8f1c-51d0ea53def8
 # ╟─4ed5c81a-26b7-45b8-b200-deb810efd192
 # ╟─c662dc62-7c83-4607-a08a-88318b930968
-# ╠═d325858b-3dff-446d-a168-1c19257fc6b0
-# ╠═defa88c3-e531-493f-89ec-cf71bb9f8ac0
+# ╟─defa88c3-e531-493f-89ec-cf71bb9f8ac0
 # ╟─5d2b8cbc-4caa-4509-b50d-6e40b0db028c
 # ╟─e6049fd8-79ea-48af-b77b-e741a12d57be
 # ╟─c099b041-0fbc-4975-8e7d-f522ce54f059
