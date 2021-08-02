@@ -297,7 +297,6 @@ La siguiente función es también una implementación del método de Newton pero
 # ╔═╡ ec813e42-baa2-4308-8dd8-9904766ffe26
 function newton1D(f, x0)
 	f′(x) = ForwardDiff.derivative(f, x)
-	x0 = 37.0
 	sequence = [x0]
 	x = x0
 	for i in 1:10
@@ -312,7 +311,7 @@ Tomando como ejemplo la ecuación $x^2 - 2$, cuya solución es $\sqrt{2}$ se tie
 """
 
 # ╔═╡ 88740cbe-6014-41ab-b367-353c9d540056
-newton(f₂, h, 37, steps)
+newton(f₂, h, 1, steps)
 
 # ╔═╡ 0e1a5906-986b-4560-bce2-40b478707ccb
 newton1D(f₂, 37.0)
@@ -383,7 +382,12 @@ md"""
 
 # ╔═╡ d6ee8288-e825-4971-9e55-437909bc2f2a
 md"""
-Este método consiste en utilizar la definición de derivada para aproximarse a la misma, es el método más antiguo y existia ya antes de la derivada simbólica desarrollada por Newton.
+Utilizar la definición de derivada para realizar una aproximación es uno de los métodos más antiguo ya que nace de la propia definición de la derivada.
+"""
+
+# ╔═╡ 3f410b67-0a8b-4c3b-b90d-861fff9fc005
+md"""
+El método de derivación plantea un problema en el que se conocen los puntos $xₙ$ y los puntos $f(xₙ)$, a partir de ello se busca una estimación de la derivada $f′(xₙ)$, por la propia definición del problema la ecuación que define $f(x)$ nunca se llega a conocer por lo que hay que recurrir a la definición de la derivada.
 """
 
 # ╔═╡ 418f9003-0974-49b1-a977-9993fc399776
@@ -392,7 +396,7 @@ La definición de derivada de una función $f(x)$ es la siguiente:
 
 $f'(x) = \lim \limits_{h \to 0} \frac{f(x + h) - f(x)}{h}$
 
-Para realizar una aproximación al valor de $f'(x)$ aplicando la definición para $h>0$:
+Para realizar una aproximación al valor de $f'(x)$ con $h>0$:
 
 $f'(x_{0}) \approx \frac{f(x_{0} + h) - f(x_{0})}{h}$
 
@@ -407,24 +411,28 @@ $f'(x_{n+1}) \approx \frac{f(x_{n} + h) - f(x_{n})}{h}$
 """
 
 # ╔═╡ f8f42214-e6d0-4b73-944f-ff4688a63c4f
-md"""
+#= md"""
 La ecuación anterior solo es útil para funciones de una sola variable pero estamos trabajando con ecuaciones diferenciales, por lo que existen 2 posibles soluciones con respecto a x y con respecto a y:
 
 $\frac{\partial f}{\partial x} (x, y)= \lim \limits_{h \to 0} \frac{f(a + h, b) - f(a, b)}{h}$
 
 $\frac{\partial f}{\partial x} (x, y)= \lim \limits_{h \to 0} \frac{f(a, b + h) - f(a, b)}{h}$
 
+""" =#
+
+# ╔═╡ a11d4b19-d087-490e-a05d-d9431adfec04
+md"""
+El método recibe 2 parámetros: $xₙ$ y $f(xₙ)$; y devuelve la aproximación $f′(xₙ)$
 """
 
 # ╔═╡ 2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
-function derivative_approx(f::Function, h::Real, x₀::Real, y₀::Real, steps::Real)
-	x = [x for x in x₀:h:steps]
+function derivative_approx(f::Function, h::Real, limit::Real)
+	x = [x for x ∈ 0:0.1:1]
+	# x[1] = x₀
 	y = zeros(size(x))
-	y[1] = y₀
-	for i in 1:length(y)-1
+	for i ∈ 1:length(y)
 		xₙ = x[i]
-		yₙ = y[i]
-		y[i+1] = (f(xₙ + h, 1) - f(xₙ, 1)) / h
+		y[i] = (f(xₙ + h) - f(xₙ)) / h
 	end
 	return [x y]
 end
@@ -434,8 +442,13 @@ md"""
 Aplicando el método anterior a los parámetros definidos se tiene:
 """
 
+# ╔═╡ e791f31f-d535-4b75-894b-74e23a654172
+md"""
+n = $(@bind n₃ Slider(0:0.001:0.5, show_value=true, default=0.001))
+"""
+
 # ╔═╡ b21a8041-a99a-4d38-9ac9-94fa0c5fb291
-diff_solution = derivative_approx(f, h, x₀, y₀, steps)
+diff_solution = derivative_approx(f₂, n₃, 10)
 
 # ╔═╡ b0e80610-20f5-45e8-9fde-be62e73278e2
 md"""
@@ -445,10 +458,13 @@ En la gráfica se observa la comparación de todos los métodos vistos.
 # ╔═╡ d80f69cc-3e95-46aa-8f1c-51d0ea53def8
 begin
 	# plotlyjs()
-	plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
-	plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
-	plot!(diff_solution[:, 1], diff_solution[:,2], markershape=:o, label="Numeric diff metehod")
-	plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
+	# plot(improved_solution[:,1], improved_solution[:,2], markershape=:o, label="Improved Euler method")
+	# plot!(solution[:,1], solution[:,2], markershape=:o, label="Euler method")
+	# plot!(diff_solution[:, 1], diff_solution[:,2], markershape=:o, label="Numeric diff metehod")
+	# plot!(sol.t, sol.u, lw=3, ls=:dash,label="Exact Solution")
+	plot([0:0.1:1], [f₂(x) for x ∈ 0:0.1:1], markershape=:o, label="f(x)")
+	plot!([0:0.1:1], [√x for x ∈ 0:0.1:1], markershape=:o, label="f′(x)")
+	plot!(diff_solution[:,1], diff_solution[:,2], markershape=:o, label="f′(x) aprox")
 end
 
 # ╔═╡ 4ed5c81a-26b7-45b8-b200-deb810efd192
@@ -489,6 +505,7 @@ md"""
 5. http://www.math.utah.edu/~korevaar/2250spring14/improvedeuler_2250.pdf
 6. https://www.uio.no/studier/emner/matnat/math/MAT-INF1100/h08/kompendiet/functions2.pdf
 7. http://www.universityofcalicut.info/SDE/BSc_maths_numerical_methods.pdf
+8. https://en.wikipedia.org/wiki/Numerical_differentiation
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2018,13 +2035,16 @@ version = "0.9.1+5"
 # ╟─cc2d4832-86fd-4987-9137-c696e2a6d9dc
 # ╟─b1f3139a-c699-4b48-a741-f0a1ebc993a8
 # ╟─d6ee8288-e825-4971-9e55-437909bc2f2a
+# ╟─3f410b67-0a8b-4c3b-b90d-861fff9fc005
 # ╟─418f9003-0974-49b1-a977-9993fc399776
 # ╟─f8f42214-e6d0-4b73-944f-ff4688a63c4f
+# ╟─a11d4b19-d087-490e-a05d-d9431adfec04
 # ╠═2c0c2ff9-ed3c-43fc-ab84-5f6ebf03a4b3
 # ╟─caf22a05-6145-4ab7-b458-05161e6ea645
+# ╟─e791f31f-d535-4b75-894b-74e23a654172
 # ╠═b21a8041-a99a-4d38-9ac9-94fa0c5fb291
 # ╟─b0e80610-20f5-45e8-9fde-be62e73278e2
-# ╠═d80f69cc-3e95-46aa-8f1c-51d0ea53def8
+# ╟─d80f69cc-3e95-46aa-8f1c-51d0ea53def8
 # ╟─4ed5c81a-26b7-45b8-b200-deb810efd192
 # ╟─c662dc62-7c83-4607-a08a-88318b930968
 # ╠═d325858b-3dff-446d-a168-1c19257fc6b0
